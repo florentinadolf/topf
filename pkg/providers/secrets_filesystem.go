@@ -14,6 +14,9 @@ import (
 
 // NewFilesystemSecretsProvider returns a SecretsProvider that reads and writes
 // secrets.yaml at the given path with optional SOPS support.
+//
+// cache may be nil, which simply disables caching and deduplication of the
+// decrypted file contents.
 func NewFilesystemSecretsProvider(secretsPath string, cache *decryption.Cache) SecretsProvider {
 	return &filesystemSecrets{
 		path:  secretsPath,

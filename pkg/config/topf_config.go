@@ -60,6 +60,9 @@ type TopfConfig struct {
 // PatchesDir defaults to the directory containing the config file.
 // SecretsPath defaults to "secrets.yaml" next to the config file (not inside PatchesDir).
 // Relative paths for both are resolved against the directory containing the config file.
+//
+// cache may be nil, which simply disables caching and deduplication of the
+// decrypted file contents.
 func LoadFromFile(path string, cache *decryption.Cache) (config *TopfConfig, secrets []string, err error) {
 	// Read file with automatic SOPS decryption if needed
 	var content []byte
@@ -133,7 +136,10 @@ func LoadFromFile(path string, cache *decryption.Cache) (config *TopfConfig, sec
 	return config, secrets, err
 }
 
-// GetSecretsProvider returns the configured secrets provider, or the default filesystem provider
+// GetSecretsProvider returns the configured secrets provider, or the default filesystem provider.
+//
+// cache may be nil, which simply disables caching and deduplication of the
+// decrypted file contents.
 func (t *TopfConfig) GetSecretsProvider(cache *decryption.Cache) providers.SecretsProvider {
 	if t.SecretsProvider != "" {
 		return providers.NewBinarySecretsProvider(t.SecretsProvider)

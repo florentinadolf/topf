@@ -31,7 +31,9 @@ type PatchContext struct {
 	Data              map[string]any
 	Node              *Node
 	PatchesDir        string
-	DecryptCache      *decryption.Cache
+	// DecryptCache may be nil, which simply disables caching and
+	// deduplication of the decrypted patch file contents.
+	DecryptCache *decryption.Cache
 }
 
 // Load loads all patches applicable for the node This includes general patches,

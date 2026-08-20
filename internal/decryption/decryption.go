@@ -26,6 +26,9 @@ type decryptResult struct {
 
 // Cache stores the result of ReadFile calls, keyed by file path.
 // It is safe for concurrent use by multiple goroutines.
+//
+// A nil *Cache is a valid, ready-to-use value that simply performs no
+// caching: see ReadFile.
 type Cache struct {
 	mu    sync.RWMutex
 	cache map[string]decryptResult
@@ -46,6 +49,11 @@ func NewCache() *Cache {
 // Results are cached and deduplicated: concurrent calls for the same path
 // will only fork sops/vals once.
 //
+// A nil receiver is valid and behaves as a cache that never stores anything:
+// every call performs a fresh read, without caching or deduplication. This
+// lets callers outside this module - which cannot construct a *Cache, since
+// this package is internal - pass nil to the exported APIs taking one.
+//
 // The returned content and secrets slices are aliases of the cached data
 // and share the same underlying arrays. Callers must not append to, resize,
 // or write into the returned slices; do so would corrupt the cache and
@@ -53,6 +61,15 @@ func NewCache() *Cache {
 //
 // Returns an error wrapping fs.ErrNotExist if the file doesn't exist.
 func (c *Cache) ReadFile(path string) ([]byte, []string, error) {
+	if c == nil {
+		res, err := readAndDecrypt(path)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		return res.content, res.secrets, nil
+	}
+
 	c.mu.RLock()
 
 	res, cached := c.cache[path]
@@ -64,47 +81,10 @@ func (c *Cache) ReadFile(path string) ([]byte, []string, error) {
 	}
 
 	raw, err, _ := c.sf.Do(path, func() (any, error) {
-		if _, err := os.Stat(path); err != nil {
-			if errors.Is(err, fs.ErrNotExist) {
-				return nil, fmt.Errorf("read file %q: %w", path, fs.ErrNotExist)
-			}
-
-			return nil, fmt.Errorf("read file %q: %w", path, err)
-		}
-
-		var (
-			content     []byte
-			sopsSecrets []string
-		)
-
-		isEncrypted, err := sops.IsEncrypted(path)
+		decrypted, err := readAndDecrypt(path)
 		if err != nil {
 			return nil, err
 		}
-
-		if isEncrypted {
-			content, sopsSecrets, err = sops.Decrypt(path)
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			//nolint:gosec // files read through a variable in our control
-			content, err = os.ReadFile(path)
-			if err != nil {
-				return nil, err
-			}
-		}
-
-		valsContent, valsSecrets, err := vals.EvalContent(content)
-		if err != nil {
-			return nil, err
-		}
-
-		allSecrets := make([]string, 0, len(sopsSecrets)+len(valsSecrets))
-		allSecrets = append(allSecrets, sopsSecrets...)
-		allSecrets = append(allSecrets, valsSecrets...)
-
-		decrypted := decryptResult{content: valsContent, secrets: allSecrets}
 
 		c.mu.Lock()
 		c.cache[path] = decrypted
@@ -122,4 +102,50 @@ func (c *Cache) ReadFile(path string) ([]byte, []string, error) {
 	}
 
 	return out.content, out.secrets, nil
+}
+
+// readAndDecrypt reads a single file, decrypting it with SOPS if encrypted and
+// evaluating any vals references afterwards. It performs no caching.
+func readAndDecrypt(path string) (decryptResult, error) {
+	if _, err := os.Stat(path); err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return decryptResult{}, fmt.Errorf("read file %q: %w", path, fs.ErrNotExist)
+		}
+
+		return decryptResult{}, fmt.Errorf("read file %q: %w", path, err)
+	}
+
+	var (
+		content     []byte
+		sopsSecrets []string
+	)
+
+	isEncrypted, err := sops.IsEncrypted(path)
+	if err != nil {
+		return decryptResult{}, err
+	}
+
+	if isEncrypted {
+		content, sopsSecrets, err = sops.Decrypt(path)
+		if err != nil {
+			return decryptResult{}, err
+		}
+	} else {
+		//nolint:gosec // files read through a variable in our control
+		content, err = os.ReadFile(path)
+		if err != nil {
+			return decryptResult{}, err
+		}
+	}
+
+	valsContent, valsSecrets, err := vals.EvalContent(content)
+	if err != nil {
+		return decryptResult{}, err
+	}
+
+	allSecrets := make([]string, 0, len(sopsSecrets)+len(valsSecrets))
+	allSecrets = append(allSecrets, sopsSecrets...)
+	allSecrets = append(allSecrets, valsSecrets...)
+
+	return decryptResult{content: valsContent, secrets: allSecrets}, nil
 }
