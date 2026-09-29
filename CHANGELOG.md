@@ -1,5 +1,46 @@
 # Changelog
 
+## [0.6.1] - 2026-09-29
+
+### Features
+
+- Add shell completion command ([67cc807](https://github.com/postfinance/topf/commit/67cc8074ef90b59acb3ed18c794883950cad4e1f))
+- **autocomplete**: Add safeguards and display root flags ([3833ab7](https://github.com/postfinance/topf/commit/3833ab76679bc8455ffa76ec4d6257e3b7e83286))
+- Add support for JSON logging (#139) ([dbb6051](https://github.com/postfinance/topf/commit/dbb605161f5ce601fc4dcbfcafe437a070ec5a77))
+- Allow skipping node prechecks on upgrade (#138) ([b054fdf](https://github.com/postfinance/topf/commit/b054fdfd5977faa7722ac3ea08f798d8d192806a))
+- **log**: Add talos' live reporter mode for upgrades (#154) ([4921201](https://github.com/postfinance/topf/commit/49212013ee8cb8f99b0b30e9f19eb1486bb72936))
+- **apply**: Add colored diffs (#156) ([52d3949](https://github.com/postfinance/topf/commit/52d3949e720bfcf1bd56641a9a6734794305f3e9))
+
+### Bug Fixes
+
+- **upgrade**: Replace skip-prechecks with allow-not-ready ([e697499](https://github.com/postfinance/topf/commit/e6974997ad7acbdbcbaebeee78de0bafeecb740a))
+- **confirmations**: Prevent concurrent prompts and improve nonTTY usecase ([db40e24](https://github.com/postfinance/topf/commit/db40e240f4716a0a51d1f06c46b5d04e81a90a43))
+- Send interactive prompts to stdErr and improve secrets doc ([8ae51c8](https://github.com/postfinance/topf/commit/8ae51c8a49e93c37b5d506c569093ad45e54538a))
+- **log**: Set proper level for retry library logs ([35d5c9e](https://github.com/postfinance/topf/commit/35d5c9e2749ad86a7d213e67811fee0dd8b3f50f))
+
+### Documentation
+
+- Migrate example to v1.14.0 and improve migration skill ([2142812](https://github.com/postfinance/topf/commit/2142812ffa1c38ba5dc5a28774526899f1622637))
+- **skills**: Add lessons from a real talhelper migration to migrate-talhelper-to-topf ([079186c](https://github.com/postfinance/topf/commit/079186c82a78ae2222f18d51f6e82bc3636306c4))
+- **contributing**: Add 'allow edit by maintainers' notice ([bc57db9](https://github.com/postfinance/topf/commit/bc57db9cf569ada8f830115e50d87b21b569aea2))
+- **secrets**: Improve secrets creation doc ([1a34ea1](https://github.com/postfinance/topf/commit/1a34ea150378d247b066ed9d269e32d8b6726344))
+
+### Testing
+
+- Add e2e topf integration tests ([22f2dda](https://github.com/postfinance/topf/commit/22f2dda15f5718c3eb5cc803a2e087f2457679aa))
+
+### Miscellaneous
+
+- Update changelog ([49e1494](https://github.com/postfinance/topf/commit/49e1494443dcd921540989ea54579706078681e2))
+- Replace logo with SVG version ([9e8a2a5](https://github.com/postfinance/topf/commit/9e8a2a5ecc6178932e01e6a4008be811724b4a50))
+- Improve docs around skip-node-prechecks ([4fecfd9](https://github.com/postfinance/topf/commit/4fecfd9ed31e688cbff512d486681691beb754ba))
+- **upgrade**: Report image pull start with rep.Running ([55b1597](https://github.com/postfinance/topf/commit/55b15973b8370bab47864d692b5250017575c3f6))
+
+### Build
+
+- Bump talos api+machinery to v1.14.1 ([9491acc](https://github.com/postfinance/topf/commit/9491acc21b8286058040eee085c74f8529f1f7fe))
+- **deps**: Bump image factory, urfave/cli and go/sync ([fef2d85](https://github.com/postfinance/topf/commit/fef2d852d08b580f091cf13d65104b5572597515))
+- **deps**: Update gh-actions ([af41ea8](https://github.com/postfinance/topf/commit/af41ea80e74473cf25093142b54bd1eac339eef0))
 ## [0.6.0] - 2026-09-03
 
 ### Features
